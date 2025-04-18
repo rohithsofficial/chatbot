@@ -187,14 +187,13 @@
 
         // Function to toggle chat window
         window.onload = function() {
-            sendMessage("hi");  // Automatically send "hi" on page load
+            // sendMessage("hi");  // Automatically send "hi" on page load
         };
         
         function toggleChat() {
             const chatPanel = document.getElementById("chatbox-panel");
             if (chatPanel.style.display === "none" || chatPanel.style.display === "") {
                 chatPanel.style.display = "flex";
-                sendMessage("hi"); // Simulate the initial user greeting
             } else {
                 chatPanel.style.display = "none";
             }
@@ -272,7 +271,7 @@ function displayMessage(message, sender) {
                         return; // Exit the function to prevent further processing
                     }
                     displayMessage(option, 'user');
-                    fetch('http://127.0.0.1:5000/api/chat', {
+                    fetch('https://chatbot-lom4.onrender.com/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ message: option, user_id: userId })
