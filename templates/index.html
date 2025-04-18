@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Admission Chatbot</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e5ddd5;
+        }
+    
+        /* Chatbox Panel (Initially Hidden) */
+        #chatbox-panel {
+            width: 360px;
+            height: 500px;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+    
+        /* Chatbox Header */
+        #chatbox-header {
+            background-color: #075e54;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    
+        #close-chat {
+            cursor: pointer;
+        }
+    
+        /* Chatbox */
+        #chatbox {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #e5ddd5;
+        }
+    
+        /* Chat bubbles */
+        .user-message,
+        .bot-message {
+            max-width: 75%;
+            padding: 10px 14px;
+            margin: 6px 0;
+            font-size: 14px;
+            line-height: 1.4;
+            border-radius: 7.5px;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+    
+        .user-message {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 0;
+        }
+    
+        .bot-message {
+            background-color: #ffffff;
+            align-self: flex-start;
+            margin-right: auto;
+            border-bottom-left-radius: 0;
+        }
+    
+        /* Input and button */
+        #user_input {
+            border: none;
+            padding: 12px;
+            font-size: 14px;
+            width: 100%;
+            border-top: 1px solid #ddd;
+            outline: none;
+        }
+    
+        #send-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #075e54;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+    
+        #send-button:hover {
+            background-color: #064e44;
+        }
+    
+        /* Toggle Button */
+        #toggle-chat {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25d366;
+            color: white;
+            padding: 15px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    
+        #toggle-chat:hover {
+            background-color: #1ebc59;
+        }
+
+        .option-button {
+            background-color: #f0f0f0;         /* Default button color */
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            height: 40px;
+            width: 200px;
+            padding: 8px 16px;
+            margin: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #333;
+        }
+
+        .option-button:hover {
+            background-color: #075e54;         /* Dark green hover */
+            color: #fff;                       /* White text on hover */
+            border-color: #075e54;
+            transform: scale(1.05);            /* Slight zoom effect */
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toggle Chat Button -->
+    <button id="toggle-chat" onclick="toggleChat()">💬</button>
+
+    <!-- Chatbox Panel -->
+    <div id="chatbox-panel">
+        <div id="chatbox-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <!-- <img src="{{ url_for('static', filename='assets/images/bot.png') }}" alt="College Logo" width="200" /> -->
+                <span>College Assistant Bot</span>
+            </div>
+            <span id="close-chat" onclick="toggleChat()">X</span>
+        </div>
+        <div id="chatbox"></div>
+        <input type="text" id="user_input" placeholder="Type your message" />
+        <button id="send-button" onclick="sendMessage()">Send</button>
+    </div>
+  <!-- Add these hidden elements to store the image paths -->
+<div id="userAvatar" data-src="{{ url_for('static', filename='assets/images/college-logo.jpg') }}"></div>
+<div id="botAvatar" data-src="{{ url_for('static', filename='assets/images/bot.png') }}"></div>
+
+    <script>
+        let userId = 'user123'; // Simulating a user ID
+
+        // Function to toggle chat window
+        window.onload = function() {
+            sendMessage("hi");  // Automatically send "hi" on page load
+        };
+        
+        function toggleChat() {
+            const chatPanel = document.getElementById("chatbox-panel");
+            if (chatPanel.style.display === "none" || chatPanel.style.display === "") {
+                chatPanel.style.display = "flex";
+                sendMessage("hi"); // Simulate the initial user greeting
+            } else {
+                chatPanel.style.display = "none";
+            }
+        }
+
+        // Function to send message to the server
+        function sendMessage(message = '') {
+            const userMessage = message || document.getElementById("user_input").value.trim();
+            if (userMessage) {
+                displayMessage(userMessage, 'user');
+                document.getElementById("user_input").value = '';
+
+                fetch('http://127.0.0.1:5000/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userMessage, user_id: userId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) displayMessage(data.message, 'bot');
+                    if (data.options) displayOptions(data.options);
+                })
+                .catch(err => console.log('Error sending message:', err));
+            }
+        }
+
+        // Function to display the message in the chat
+        // Function to display the message in the chat
+        const userAvatarSrc = document.getElementById("userAvatar").getAttribute("data-src");
+const botAvatarSrc = document.getElementById("botAvatar").getAttribute("data-src");
+
+function displayMessage(message, sender) {
+    const chatbox = document.getElementById("chatbox");
+
+    const messageWrapper = document.createElement("div");
+    messageWrapper.style.display = "flex";
+    messageWrapper.style.margin = "6px 0";
+    messageWrapper.style.alignItems = "flex-end";
+    messageWrapper.style.justifyContent = sender === "user" ? "flex-end" : "flex-start";
+
+    const avatar = document.createElement("img");
+    avatar.src = sender === "user" ? userAvatarSrc : botAvatarSrc;
+    avatar.alt = sender === "user" ? "User" : "Bot";
+    avatar.style.width = "28px";
+    avatar.style.height = "28px";
+    avatar.style.borderRadius = "50%";
+    avatar.style.margin = sender === "user" ? "0 0 0 8px" : "0 8px 0 0";
+
+    const messageElement = document.createElement("div");
+    messageElement.classList.add(sender === "user" ? "user-message" : "bot-message");
+    messageElement.textContent = message;
+
+    messageWrapper.appendChild(sender === "user" ? messageElement : avatar);
+    messageWrapper.appendChild(sender === "user" ? avatar : messageElement);
+
+    chatbox.appendChild(messageWrapper);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+
+        // Function to display options as clickable buttons
+        function displayOptions(options) {
+            const chatbox = document.getElementById('chatbox');
+            const optionsContainer = document.createElement('div');
+            optionsContainer.classList.add('bot-message');
+
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.classList.add('option-button');
+
+                button.onclick = () => {
+                    if (option === "🏠 Back to Main Menu") {
+                        sendMessage("hi"); // Trigger the greeting state to reset conversation
+                        return; // Exit the function to prevent further processing
+                    }
+                    displayMessage(option, 'user');
+                    fetch('http://127.0.0.1:5000/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: option, user_id: userId })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.message) displayMessage(data.message, 'bot');
+                        if (data.options) displayOptions(data.options);
+                    });
+                };
+
+                optionsContainer.appendChild(button);
+            });
+
+            chatbox.appendChild(optionsContainer);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+    </script>
+
+</body>
+</html>
