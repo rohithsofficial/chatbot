@@ -207,7 +207,7 @@
                 displayMessage(userMessage, 'user');
                 document.getElementById("user_input").value = '';
 
-                fetch('http://127.0.0.1:5000/api/chat', {
+                fetch('https://chatbot-lom4.onrender.com/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: userMessage, user_id: userId })
