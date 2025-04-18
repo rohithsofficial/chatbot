@@ -27,7 +27,7 @@ def chat():
             prev = user_prev_state.get(user_id, "greeting")
             user_state[user_id] = prev
             if prev == "fee_selected":
-                response_message = "💰 Which course do you want fee details for?"
+                response_message = "💰Which course do you want fee details for?"
                 response_options = ["💻 Computer Science", "📡 Electronics", "⚙️ Mechanical", "🏠 Main Menu"]
             elif prev == "admission_selected":
                 response_message = "✅ The admission process includes:\n1. Fill the online form\n2. Submit documents\n3. Attend counseling session."
