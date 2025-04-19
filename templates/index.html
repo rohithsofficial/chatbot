@@ -8,26 +8,24 @@
         /* General Styles */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #e5ddd5;
         }
-    
+
         /* Chatbox Panel (Initially Hidden) */
         #chatbox-panel {
-            width: 360px;
-            height: 500px;
+            width: 0;
+            height: 0;
             position: fixed;
             bottom: 80px;
             right: 20px;
             background-color: #fff;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
-            display: none;
+            display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: width 0.3s ease, height 0.3s ease;
         }
-    
+
         /* Chatbox Header */
         #chatbox-header {
             background-color: #075e54;
@@ -38,11 +36,11 @@
             justify-content: space-between;
             align-items: center;
         }
-    
+
         #close-chat {
             cursor: pointer;
         }
-    
+
         /* Chatbox */
         #chatbox {
             flex: 1;
@@ -50,7 +48,7 @@
             overflow-y: auto;
             background-color: #e5ddd5;
         }
-    
+
         /* Chat bubbles */
         .user-message,
         .bot-message {
@@ -64,21 +62,21 @@
             position: relative;
             animation: fadeIn 0.3s ease-in-out;
         }
-    
+
         .user-message {
             background-color: #dcf8c6;
             align-self: flex-end;
             margin-left: auto;
             border-bottom-right-radius: 0;
         }
-    
+
         .bot-message {
             background-color: #ffffff;
             align-self: flex-start;
             margin-right: auto;
             border-bottom-left-radius: 0;
         }
-    
+
         /* Input and button */
         #user_input {
             border: none;
@@ -88,7 +86,7 @@
             border-top: 1px solid #ddd;
             outline: none;
         }
-    
+
         #send-button {
             width: 100%;
             padding: 12px;
@@ -98,11 +96,11 @@
             border: none;
             cursor: pointer;
         }
-    
+
         #send-button:hover {
             background-color: #064e44;
         }
-    
+
         /* Toggle Button */
         #toggle-chat {
             position: fixed;
@@ -117,13 +115,13 @@
             font-size: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-    
+
         #toggle-chat:hover {
             background-color: #1ebc59;
         }
 
         .option-button {
-            background-color: #f0f0f0;         /* Default button color */
+            background-color: #f0f0f0;
             border: 1px solid #ccc;
             border-radius: 20px;
             height: 40px;
@@ -141,10 +139,10 @@
         }
 
         .option-button:hover {
-            background-color: #075e54;         /* Dark green hover */
-            color: #fff;                       /* White text on hover */
+            background-color: #075e54;
+            color: #fff;
             border-color: #075e54;
-            transform: scale(1.05);            /* Slight zoom effect */
+            transform: scale(1.05);
         }
 
         /* Animation */
@@ -158,10 +156,11 @@
                 transform: translateY(0);
             }
         }
+
+        
     </style>
 </head>
 <body>
-
     <!-- Toggle Chat Button -->
     <button id="toggle-chat" onclick="toggleChat()">💬</button>
 
@@ -169,7 +168,6 @@
     <div id="chatbox-panel">
         <div id="chatbox-header">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <!-- <img src="{{ url_for('static', filename='assets/images/bot.png') }}" alt="College Logo" width="200" /> -->
                 <span>College Assistant Bot</span>
             </div>
             <span id="close-chat" onclick="toggleChat()">X</span>
@@ -178,24 +176,33 @@
         <input type="text" id="user_input" placeholder="Type your message" />
         <button id="send-button" onclick="sendMessage()">Send</button>
     </div>
-  <!-- Add these hidden elements to store the image paths -->
-<div id="userAvatar" data-src="{{ url_for('static', filename='assets/images/college-logo.jpg') }}"></div>
-<div id="botAvatar" data-src="{{ url_for('static', filename='assets/images/bot.png') }}"></div>
+
+    <!-- Add these hidden elements to store the image paths -->
+    <div id="userAvatar" data-src="{{ url_for('static', filename='assets/images/college-logo.jpg') }}"></div>
+    <div id="botAvatar" data-src="{{ url_for('static', filename='assets/images/bot.png') }}"></div>
 
     <script>
         let userId = 'user123'; // Simulating a user ID
+        const chatPanel = document.getElementById("chatbox-panel");
+        const fullWidth = '360px';   // expanded width
+        const fullHeight = '500px';  // expanded height
 
         // Function to toggle chat window
         window.onload = function() {
             // sendMessage("hi");  // Automatically send "hi" on page load
         };
-        
+
         function toggleChat() {
-            const chatPanel = document.getElementById("chatbox-panel");
-            if (chatPanel.style.display === "none" || chatPanel.style.display === "") {
-                chatPanel.style.display = "flex";
+            const isCollapsed = chatPanel.style.width === '0px' || chatPanel.style.width === '';
+
+            if (isCollapsed) {
+                chatPanel.style.display = 'flex'; // show it
+                chatPanel.style.width = fullWidth;
+                chatPanel.style.height = fullHeight;
             } else {
-                chatPanel.style.display = "none";
+                chatPanel.style.display = 'none'; // completely hide it
+                chatPanel.style.width = '0';      // make it take no space
+                chatPanel.style.height = '0';     // ensure height also collapses
             }
         }
 
@@ -206,7 +213,7 @@
                 displayMessage(userMessage, 'user');
                 document.getElementById("user_input").value = '';
 
-                fetch('https://chatbot-lom4.onrender.com/api/chat', {
+                fetch('http://127.0.0.1:5000/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: userMessage, user_id: userId })
@@ -221,38 +228,36 @@
         }
 
         // Function to display the message in the chat
-        // Function to display the message in the chat
         const userAvatarSrc = document.getElementById("userAvatar").getAttribute("data-src");
-const botAvatarSrc = document.getElementById("botAvatar").getAttribute("data-src");
+        const botAvatarSrc = document.getElementById("botAvatar").getAttribute("data-src");
 
-function displayMessage(message, sender) {
-    const chatbox = document.getElementById("chatbox");
+        function displayMessage(message, sender) {
+            const chatbox = document.getElementById("chatbox");
 
-    const messageWrapper = document.createElement("div");
-    messageWrapper.style.display = "flex";
-    messageWrapper.style.margin = "6px 0";
-    messageWrapper.style.alignItems = "flex-end";
-    messageWrapper.style.justifyContent = sender === "user" ? "flex-end" : "flex-start";
+            const messageWrapper = document.createElement("div");
+            messageWrapper.style.display = "flex";
+            messageWrapper.style.margin = "6px 0";
+            messageWrapper.style.alignItems = "flex-end";
+            messageWrapper.style.justifyContent = sender === "user" ? "flex-end" : "flex-start";
 
-    const avatar = document.createElement("img");
-    avatar.src = sender === "user" ? userAvatarSrc : botAvatarSrc;
-    avatar.alt = sender === "user" ? "User" : "Bot";
-    avatar.style.width = "28px";
-    avatar.style.height = "28px";
-    avatar.style.borderRadius = "50%";
-    avatar.style.margin = sender === "user" ? "0 0 0 8px" : "0 8px 0 0";
+            const avatar = document.createElement("img");
+            avatar.src = sender === "user" ? userAvatarSrc : botAvatarSrc;
+            avatar.alt = sender === "user" ? "User" : "Bot";
+            avatar.style.width = "28px";
+            avatar.style.height = "28px";
+            avatar.style.borderRadius = "50%";
+            avatar.style.margin = sender === "user" ? "0 0 0 8px" : "0 8px 0 0";
 
-    const messageElement = document.createElement("div");
-    messageElement.classList.add(sender === "user" ? "user-message" : "bot-message");
-    messageElement.textContent = message;
+            const messageElement = document.createElement("div");
+            messageElement.classList.add(sender === "user" ? "user-message" : "bot-message");
+            messageElement.textContent = message;
 
-    messageWrapper.appendChild(sender === "user" ? messageElement : avatar);
-    messageWrapper.appendChild(sender === "user" ? avatar : messageElement);
+            messageWrapper.appendChild(sender === "user" ? messageElement : avatar);
+            messageWrapper.appendChild(sender === "user" ? avatar : messageElement);
 
-    chatbox.appendChild(messageWrapper);
-    chatbox.scrollTop = chatbox.scrollHeight;
-}
-
+            chatbox.appendChild(messageWrapper);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
 
         // Function to display options as clickable buttons
         function displayOptions(options) {
@@ -267,11 +272,11 @@ function displayMessage(message, sender) {
 
                 button.onclick = () => {
                     if (option === "🏠 Back to Main Menu") {
-                        sendMessage("hi"); // Trigger the greeting state to reset conversation
-                        return; // Exit the function to prevent further processing
+                        sendMessage("hi");
+                        return;
                     }
                     displayMessage(option, 'user');
-                    fetch('https://chatbot-lom4.onrender.com/api/chat', {
+                    fetch('http://127.0.0.1:5000/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ message: option, user_id: userId })
@@ -290,6 +295,5 @@ function displayMessage(message, sender) {
             chatbox.scrollTop = chatbox.scrollHeight;
         }
     </script>
-
 </body>
 </html>
